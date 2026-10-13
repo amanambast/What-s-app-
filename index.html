@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ChatWave Messenger</title>
+
+<style>
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background: #e9edef;
+    height: 100dvh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.app {
+    width: 100%;
+    max-width: 500px;
+    height: 100dvh;
+    background: white;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.header {
+    background: #075e54;
+    color: white;
+    padding: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.header h2 {
+    font-size: 21px;
+}
+
+.header button {
+    background: transparent;
+    color: white;
+    border: none;
+    font-size: 22px;
+    cursor: pointer;
+}
+
+.search {
+    padding: 10px;
+    background: #f6f6f6;
+}
+
+.search input {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 25px;
+    outline: none;
+    background: white;
+    font-size: 15px;
+}
+
+.contact-list {
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+}
+
+.contact {
+    display: flex;
+    align-items: center;
+    padding: 13px;
+    border-bottom: 1px solid #eee;
+    cursor: pointer;
+    gap: 12px;
+}
+
+.contact:hover {
+    background: #f3f6f6;
+}
+
+.avatar {
+    width: 48px;
+    height: 48px;
+    background: #128c7e;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+}
+
+.contact-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.contact-info h3 {
+    font-size: 16px;
+    margin-bottom: 5px;
+}
+
+.contact-info p {
+    font-size: 13px;
+    color: #667781;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.chat {
+    display: none;
+    flex: 1;
+    flex-direction: column;
+    min-height: 0;
+    background: #efeae2;
+}
+
+.chat-header {
+    background: #075e54;
+    color: white;
+    padding: 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.chat-header button {
+    border: none;
+    background: transparent;
+    color: white;
+    font-size: 23px;
+    cursor: pointer;
+}
+
+.chat-user {
+    flex: 1;
+}
+
+.chat-user small {
+    display: block;
+    margin-top: 4px;
+    color: #d5f5e9;
+}
+
+.messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.message {
+    max-width: 82%;
+    padding: 10px 12px;
+    border-radius: 10px;
+    font-size: 15px;
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+    background: white;
+    align-self: flex-start;
+}
+
+.message.me {
+    background: #d9fdd3;
+    align-self: flex-end;
+}
+
+.message time {
+    display: block;
+    text-align: right;
+    font-size: 10px;
+    color: #667781;
+    margin-top: 5px;
+}
+
+.composer {
+    display: flex;
+    gap: 7px;
+    padding: 10px;
+    background: #f0f2f5;
+    align-items: center;
+}
+
+.composer input {
+    flex: 1;
+    min-width: 0;
+    border: none;
+    outline: none;
+    padding: 13px;
+    border-radius: 25px;
+    font-size: 15px;
+}
+
+.composer button {
+    border: none;
+    border-radius: 50%;
+    width: 43px;
+    height: 43px;
+    background: #128c7e;
+    color: white;
+    font-size: 20px;
+    cursor: pointer;
+}
+
+.empty {
+    text-align: center;
+    color: #667781;
+    margin: auto;
+    padding: 20px;
+}
+
+.dark {
+    background: #111b21;
+    color: white;
+}
+
+.dark .contact {
+    border-color: #27343b;
+}
+
+.dark .contact:hover {
+    background: #202c33;
+}
+
+.dark .contact-info p {
+    color: #b0bec5;
+}
+
+.dark .search,
+.dark .composer {
+    background: #202c33;
+}
+
+.dark .search input,
+.dark .composer input {
+    background: #2a3942;
+    color: white;
+}
+
+.dark .message {
+    background: #202c33;
+    color: white;
+}
+
+.dark .message.me {
+    background: #005c4b;
+}
+
+@media (min-width: 501px) {
+    .app {
+        height: 95dvh;
+        border-radius: 12px;
+        box-shadow: 0 4px 25px #0002;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="app" id="app">
+
+    <header class="header">
+        <h2>ChatWave 💬</h2>
+        <button id="themeBtn" aria-label="Toggle dark mode">🌙</button>
+    </header>
+
+    <section class="search">
+        <input
+            id="search"
+            type="search"
+            placeholder="Search chats..."
+            aria-label="Search chats"
+        >
+    </section>
+
+    <section class="contact-list" id="contacts"></section>
+
+    <section class="chat" id="chat">
+
+        <header class="chat-header">
+            <button id="backBtn" aria-label="Back">‹</button>
+
+            <div class="avatar" id="chatAvatar">A</div>
+
+            <div class="chat-user">
+                <strong id="chatName">Contact</strong>
+                <small>Demo conversation</small>
+            </div>
+        </header>
+
+        <div class="messages" id="messages"></div>
+
+        <form class="composer" id="messageForm">
+            <button type="button" id="emojiBtn" aria-label="Add emoji">😊</button>
+
+            <input
+                id="messageInput"
+                type="text"
+                placeholder="Type a message..."
+                autocomplete="off"
+                aria-label="Message"
+                maxlength="2000"
+            >
+
+            <button type="submit" aria-label="Send message">➤</button>
+        </form>
+
+    </section>
+
+</div>
+
+<script>
+const people = [
+    { id: 1, name: "Rahul", avatar: "🧑", last: "Hey! How are you?" },
+    { id: 2, name: "Priya", avatar: "👩", last: "Hello 😊" },
+    { id: 3, name: "Aman", avatar: "😎", last: "What's up?" },
+    { id: 4, name: "Family Group", avatar: "👨‍👩‍👧‍👦", last: "Good morning!" },
+    { id: 5, name: "Friends Group", avatar: "👥", last: "See you soon!" }
+];
+
+let currentPerson = null;
+const chatHistory = {};
+
+const contacts = document.getElementById("contacts");
+const chat = document.getElementById("chat");
+const messages = document.getElementById("messages");
+const search = document.getElementById("search");
+const messageInput = document.getElementById("messageInput");
+
+function renderContacts() {
+    contacts.replaceChildren();
+
+    const query = search.value.toLowerCase();
+
+    people
+        .filter(person => person.name.toLowerCase().includes(query))
+        .forEach(person => {
+            const row = document.createElement("div");
+            row.className = "contact";
+
+            const avatar = document.createElement("div");
+            avatar.className = "avatar";
+            avatar.textContent = person.avatar;
+
+            const info = document.createElement("div");
+            info.className = "contact-info";
+
+            const name = document.createElement("h3");
+            name.textContent = person.name;
+
+            const preview = document.createElement("p");
+            const history = chatHistory[person.id];
+            preview.textContent = history?.length
+                ? history[history.length - 1].text
+                : person.last;
+
+            info.append(name, preview);
+            row.append(avatar, info);
+
+            row.addEventListener("click", () => openChat(person));
+            contacts.appendChild(row);
+        });
+}
+
+function openChat(person) {
+    currentPerson = person;
+
+    document.getElementById("chatName").textContent = person.name;
+    document.getElementById("chatAvatar").textContent = person.avatar;
+
+    contacts.style.display = "none";
+    document.querySelector(".search").style.display = "none";
+    chat.style.display = "flex";
+
+    renderMessages();
+    messageInput.focus();
+}
+
+function renderMessages() {
+    messages.replaceChildren();
+
+    const history = chatHistory[currentPerson.id] || [];
+
+    if (!history.length) {
+        const empty = document.createElement("div");
+        empty.className = "empty";
+        empty.textContent =
+            "This is a demo chat. Send a message to get started!";
+        messages.appendChild(empty);
+        return;
+    }
+
+    history.forEach(item => {
+        const bubble = document.createElement("div");
+        bubble.className = "message" + (item.me ? " me" : "");
+
+        const text = document.createElement("div");
+        text.textContent = item.text;
+
+        const time = document.createElement("time");
+        time.textContent = item.time;
+
+        bubble.append(text, time);
+        messages.appendChild(bubble);
+    });
+
+    messages.scrollTop = messages.scrollHeight;
+}
+
+document.getElementById("messageForm").addEventListener("submit", event => {
+    event.preventDefault();
+
+    const text = messageInput.value.trim();
+
+    if (!text || !currentPerson) return;
+
+    if (!chatHistory[currentPerson.id]) {
+        chatHistory[currentPerson.id] = [];
+    }
+
+    chatHistory[currentPerson.id].push({
+        text,
+        me: true,
+        time: new Date().toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit"
+        })
+    });
+
+    messageInput.value = "";
+
+    renderMessages();
+    renderContacts();
+});
+
+document.getElementById("backBtn").addEventListener("click", () => {
+    chat.style.display = "none";
+    contacts.style.display = "flex";
+    document.querySelector(".search").style.display = "block";
+    currentPerson = null;
+    renderContacts();
+});
+
+search.addEventListener("input", renderContacts);
+
+document.getElementById("emojiBtn").addEventListener("click", () => {
+    messageInput.value += " 😊";
+    messageInput.focus();
+});
+
+document.getElementById("themeBtn").addEventListener("click", () => {
+    document.getElementById("app").classList.toggle("dark");
+});
+
+renderContacts();
+</script>
+
+</body>
+</html>
